@@ -1,5 +1,11 @@
 <?php
 require_once 'db.php';
+session_start();
+
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login.php');
+    exit;
+}
 
 $error = "";
 
@@ -33,140 +39,293 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add New Pet - PetRecord</title>
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-light: #818cf8;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #f8fafc;
-            color: #334155;
+            background: var(--bg);
+            color: var(--text-primary);
         }
-        .form-card {
+        nav {
+            background: #0f172a;
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            text-decoration: none;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .brand span {
+            color: var(--warning);
+        }
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        .user-info {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.95rem;
+        }
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
             border: none;
+            cursor: pointer;
+            font-size: 0.95rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .btn-outline {
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+        }
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: var(--primary-light);
+        }
+        .btn-light {
+            background: #f1f5f9;
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 3rem 1rem;
+        }
+        .card {
+            background: var(--card-bg);
             border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            padding: 2.5rem;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .icon {
+            background: rgba(79, 70, 229, 0.1);
+            color: var(--primary);
+            padding: 1rem;
+            border-radius: 50%;
+            font-size: 1.5rem;
+        }
+        .header h1 {
+            font-size: 1.75rem;
+            margin-bottom: 0.25rem;
+        }
+        .header p {
+            color: var(--text-secondary);
+        }
+        .alert {
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        .alert-danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        .row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+        .section {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+        .section-title {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 1rem;
+        }
+        .actions {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 2rem;
+        }
+        .btn-lg {
+            padding: 0.875rem 1.5rem;
+            font-size: 1rem;
+        }
+        .flex-grow {
+            flex: 1;
+        }
+        .text-danger {
+            color: var(--danger);
         }
     </style>
 </head>
 <body>
-
-    <!-- Top Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top py-3 shadow-sm">
-        <div class="container">
-            <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="index.php">
-                <i class="bi bi-shield-shaded fs-3 text-warning"></i>
-                <span>Pet<span class="text-warning">Record</span></span>
+    <nav>
+        <div class="nav-container">
+            <a href="index.php" class="brand">
+                <i class="bi bi-shield-shaded"></i>
+                Pet<span>Record</span>
             </a>
-            <div>
-                <a href="index.php" class="btn btn-outline-light btn-sm rounded-pill px-3">
-                    <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+            <div class="nav-links">
+                <span class="user-info">Welcome, <?= htmlspecialchars($_SESSION['username']) ?></span>
+                <a href="index.php" class="btn btn-outline">
+                    <i class="bi bi-arrow-left"></i> Back to Dashboard
+                </a>
+                <?php if ($_SESSION['role'] === 'admin'): ?>
+                    <a href="admin.php" class="btn btn-outline">Admin</a>
+                <?php endif; ?>
+                <a href="logout.php" class="btn btn-outline">
+                    <i class="bi bi-box-arrow-right"></i> Logout
                 </a>
             </div>
         </div>
     </nav>
-
-    <!-- Main Container -->
-    <div class="container py-5">
-        <div class="row justify-content-center">
-            <div class="col-12 col-md-8 col-lg-6">
-
-                <?php if (!empty($error)): ?>
-                    <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
-                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                        <?= htmlspecialchars($error) ?>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                <?php endif; ?>
-
-                <div class="card form-card bg-white p-4 p-md-5">
-                    <div class="d-flex align-items-center gap-3 mb-4 border-bottom pb-3">
-                        <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-circle fs-4">
-                            <i class="bi bi-plus-circle-fill"></i>
-                        </div>
-                        <div>
-                            <h3 class="fw-bold mb-1">Add New Pet</h3>
-                            <p class="text-muted small mb-0">Fill in the details below to register a new pet.</p>
-                        </div>
-                    </div>
-
-                    <form method="POST" action="add.php">
-                        
-                        <!-- Pet Name -->
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">Pet Name <span class="text-danger">*</span></label>
-                            <input type="text" name="pet_name" class="form-control form-control-lg" placeholder="e.g. Milo, Bella" required>
-                        </div>
-
-                        <!-- Species & Breed -->
-                        <div class="row g-3 mb-3">
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Species <span class="text-danger">*</span></label>
-                                <select name="species" class="form-select form-select-lg" required>
-                                    <option value="" disabled selected>Select species</option>
-                                    <option value="Dog">Dog</option>
-                                    <option value="Cat">Cat</option>
-                                    <option value="Bird">Bird</option>
-                                    <option value="Fish">Fish</option>
-                                    <option value="Other">Other</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Breed</label>
-                                <input type="text" name="breed" class="form-control form-control-lg" placeholder="e.g. Golden Retriever">
-                            </div>
-                        </div>
-
-                        <!-- Age & Gender -->
-                        <div class="row g-3 mb-3">
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Age (in years)</label>
-                                <input type="number" name="age" class="form-control form-control-lg" min="0" max="100" placeholder="e.g. 2">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Gender</label>
-                                <select name="gender" class="form-select form-select-lg">
-                                    <option value="Unknown">Unknown</option>
-                                    <option value="Male">Male</option>
-                                    <option value="Female">Female</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Owner Information -->
-                        <div class="border-top pt-3 mt-4 mb-3">
-                            <h6 class="text-uppercase text-muted fw-bold small mb-3">Owner Information</h6>
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Owner Name</label>
-                                <input type="text" name="owner_name" class="form-control form-control-lg" placeholder="e.g. Juan Dela Cruz">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Contact Number</label>
-                                <input type="text" name="contact_number" class="form-control form-control-lg" placeholder="e.g. 09123456789">
-                            </div>
-                        </div>
-
-                        <!-- Buttons -->
-                        <div class="d-flex gap-2 pt-3">
-                            <button type="submit" class="btn btn-primary btn-lg flex-grow-1 fw-semibold">
-                                <i class="bi bi-check-lg me-1"></i> Save Pet Record
-                            </button>
-                            <a href="index.php" class="btn btn-light btn-lg border fw-semibold">
-                                Cancel
-                            </a>
-                        </div>
-
-                    </form>
-                </div>
-
+    <div class="container">
+        <?php if (!empty($error)): ?>
+            <div class="alert alert-danger">
+                <i class="bi bi-exclamation-triangle-fill"></i> <?= htmlspecialchars($error) ?>
             </div>
+        <?php endif; ?>
+        <div class="card">
+            <div class="header">
+                <div class="icon">
+                    <i class="bi bi-plus-circle-fill"></i>
+                </div>
+                <div>
+                    <h1>Add New Pet</h1>
+                    <p>Fill in the details below to register a new pet</p>
+                </div>
+            </div>
+            <form method="POST" action="add.php">
+                <div class="form-group">
+                    <label class="form-label">Pet Name <span class="text-danger">*</span></label>
+                    <input type="text" name="pet_name" class="form-control" placeholder="e.g. Milo, Bella" required>
+                </div>
+                <div class="row">
+                    <div class="form-group">
+                        <label class="form-label">Species <span class="text-danger">*</span></label>
+                        <select name="species" class="form-control" required>
+                            <option value="" disabled selected>Select species</option>
+                            <option value="Dog">Dog</option>
+                            <option value="Cat">Cat</option>
+                            <option value="Bird">Bird</option>
+                            <option value="Fish">Fish</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Breed</label>
+                        <input type="text" name="breed" class="form-control" placeholder="e.g. Golden Retriever">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group">
+                        <label class="form-label">Age (in years)</label>
+                        <input type="number" name="age" class="form-control" min="0" max="100" placeholder="e.g. 2">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Gender</label>
+                        <select name="gender" class="form-control">
+                            <option value="Unknown">Unknown</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="section">
+                    <h6 class="section-title">Owner Information</h6>
+                    <div class="form-group">
+                        <label class="form-label">Owner Name</label>
+                        <input type="text" name="owner_name" class="form-control" placeholder="e.g. Juan Dela Cruz">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Contact Number</label>
+                        <input type="text" name="contact_number" class="form-control" placeholder="e.g. 09123456789">
+                    </div>
+                </div>
+                <div class="actions">
+                    <button type="submit" class="btn btn-primary btn-lg flex-grow">
+                        <i class="bi bi-check-lg"></i> Save Pet Record
+                    </button>
+                    <a href="index.php" class="btn btn-light btn-lg">Cancel</a>
+                </div>
+            </form>
         </div>
     </div>
-
-    <!-- Bootstrap 5 JS Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

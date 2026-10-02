@@ -1,7 +1,12 @@
 <?php
 require_once 'db.php';
+session_start();
 
-// Auto-create table if it doesn't exist yet
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login.php');
+    exit;
+}
+
 $createTableQuery = "CREATE TABLE IF NOT EXISTS `pets` (
     `id` INT(11) AUTO_INCREMENT PRIMARY KEY,
     `pet_name` VARCHAR(100) NOT NULL,
@@ -15,7 +20,6 @@ $createTableQuery = "CREATE TABLE IF NOT EXISTS `pets` (
 )";
 mysqli_query($conn, $createTableQuery);
 
-// Handle delete action
 $message = "";
 $messageType = "";
 
@@ -44,7 +48,6 @@ if (isset($_GET['msg'])) {
     }
 }
 
-// Search and filter logic
 $search = isset($_GET['search']) ? mysqli_real_escape_string($conn, trim($_GET['search'])) : '';
 $species_filter = isset($_GET['species']) ? mysqli_real_escape_string($conn, trim($_GET['species'])) : '';
 
@@ -64,7 +67,6 @@ if (count($where) > 0) {
 $query = "SELECT * FROM pets $whereClause ORDER BY id DESC";
 $result = mysqli_query($conn, $query);
 
-// Statistics counts
 $totalPets = 0;
 $totalDogs = 0;
 $totalCats = 0;
@@ -88,32 +90,141 @@ if ($countRes && $row = mysqli_fetch_assoc($countRes)) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pet Record Dashboard</title>
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <!-- Google Fonts -->
+    <title>Dashboard - PetRecord</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-light: #818cf8;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #f8fafc;
-            color: #334155;
+            background: var(--bg);
+            color: var(--text-primary);
         }
-        .navbar-brand {
+        nav {
+            background: #0f172a;
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .brand {
             font-weight: 700;
-            letter-spacing: -0.5px;
+            font-size: 1.5rem;
+            text-decoration: none;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .brand span {
+            color: var(--warning);
+        }
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .user-info {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.95rem;
+        }
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            font-size: 0.95rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .btn-outline {
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+        }
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: var(--primary-light);
+        }
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+        .btn-sm {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.875rem;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
         }
         .stat-card {
-            border: none;
+            background: var(--card-bg);
             border-radius: 16px;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
         }
         .stat-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+        }
+        .stat-info h3 {
+            font-size: 2.5rem;
+            margin-bottom: 0.25rem;
+        }
+        .stat-info p {
+            color: var(--text-secondary);
+            font-weight: 500;
         }
         .stat-icon {
             width: 48px;
@@ -124,147 +235,189 @@ if ($countRes && $row = mysqli_fetch_assoc($countRes)) {
             justify-content: center;
             font-size: 1.5rem;
         }
-        .main-card {
-            border: none;
+        .icon-primary {
+            background: rgba(79, 70, 229, 0.1);
+            color: var(--primary);
+        }
+        .icon-warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+        .icon-success {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--success);
+        }
+        .icon-secondary {
+            background: rgba(100, 116, 139, 0.1);
+            color: var(--text-secondary);
+        }
+        .card {
+            background: var(--card-bg);
             border-radius: 16px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
         }
-        .table th {
+        .card-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .card-title {
+            font-size: 1.25rem;
             font-weight: 600;
-            color: #64748b;
-            text-transform: uppercase;
-            font-size: 0.75rem;
-            letter-spacing: 0.05em;
-            border-top: none;
-            background-color: #f8fafc;
         }
-        .badge-species {
-            padding: 6px 12px;
-            font-weight: 500;
+        .filters {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        .search-box {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .form-control {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border);
             border-radius: 8px;
+            font-family: inherit;
         }
-        .btn-add-pet {
-            border-radius: 10px;
+        .alert {
+            padding: 1rem 1.5rem;
+            margin-bottom: 1rem;
+            border-radius: 12px;
+        }
+        .alert-success {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+        .alert-warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+        .alert-danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 1rem 1.5rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            background: #f8fafc;
             font-weight: 600;
-            padding: 10px 20px;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .badge {
+            padding: 0.375rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            background: rgba(79, 70, 229, 0.1);
+            color: var(--primary);
+        }
+        .badge-dog { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+        .badge-cat { background: rgba(34, 197, 94, 0.1); color: var(--success); }
+        .badge-other { background: rgba(100, 116, 139, 0.1); color: var(--text-secondary); }
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-secondary);
+        }
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        @media (max-width: 768px) {
+            table {
+                display: block;
+                overflow-x: auto;
+            }
         }
     </style>
 </head>
 <body>
-
-    <!-- Top Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top py-3 shadow-sm">
-        <div class="container">
-            <a class="navbar-brand d-flex align-items-center gap-2" href="index.php">
-                <i class="bi bi-shield-shaded fs-3 text-warning"></i>
-                <span>Pet<span class="text-warning">Record</span></span>
+    <nav>
+        <div class="nav-container">
+            <a href="index.php" class="brand">
+                <i class="bi bi-shield-shaded"></i>
+                Pet<span>Record</span>
             </a>
-            <div class="d-flex align-items-center gap-2">
-                <a href="add.php" class="btn btn-warning btn-add-pet d-flex align-items-center gap-2">
-                    <i class="bi bi-plus-circle-fill"></i>
-                    <span>Add Pet</span>
+            <div class="nav-links">
+                <span class="user-info">Welcome, <?= htmlspecialchars($_SESSION['username']) ?></span>
+                <?php if ($_SESSION['role'] === 'admin'): ?>
+                    <a href="admin.php" class="btn btn-outline">Admin Panel</a>
+                <?php endif; ?>
+                <a href="logout.php" class="btn btn-outline">
+                    <i class="bi bi-box-arrow-right"></i> Logout
                 </a>
             </div>
         </div>
     </nav>
-
-    <!-- Main Container -->
-    <div class="container py-4">
-
-        <!-- Notification Alert -->
-        <?php if (!empty($message)): ?>
-            <div class="alert alert-<?= htmlspecialchars($messageType) ?> alert-dismissible fade show shadow-sm" role="alert">
-                <i class="bi <?= $messageType === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill' ?> me-2"></i>
-                <?= htmlspecialchars($message) ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
+    <div class="container">
+        <?php if ($message): ?>
+            <div class="alert alert-<?= $messageType ?>"><?= htmlspecialchars($message) ?></div>
         <?php endif; ?>
-
-        <!-- Dashboard Header -->
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
-            <div>
-                <h2 class="fw-bold mb-1">🐾 Pet Management Dashboard</h2>
-                <p class="text-muted mb-0">Manage, view, and track all registered pets and their owners.</p>
-            </div>
-            <div>
-                <!-- Add Pet Button -->
-                <a href="add.php" class="btn btn-primary btn-add-pet shadow-sm d-inline-flex align-items-center gap-2">
-                    <i class="bi bi-plus-lg fs-6"></i>
-                    <span>Add New Pet</span>
-                </a>
-            </div>
-        </div>
-
-        <!-- Metric / Overview Cards -->
-        <div class="row g-3 mb-4">
-            <div class="col-12 col-sm-6 col-lg-3">
-                <div class="card stat-card shadow-sm p-3 bg-white">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <span class="text-muted small text-uppercase fw-semibold">Total Pets</span>
-                            <h3 class="fw-bold text-dark mt-1 mb-0"><?= $totalPets ?></h3>
-                        </div>
-                        <div class="stat-icon bg-primary bg-opacity-10 text-primary">
-                            <i class="bi bi-folder2-open"></i>
-                        </div>
-                    </div>
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h3><?= $totalPets ?></h3>
+                    <p>Total Pets</p>
+                </div>
+                <div class="stat-icon icon-primary">
+                    <i class="bi bi-heart-fill"></i>
                 </div>
             </div>
-            <div class="col-12 col-sm-6 col-lg-3">
-                <div class="card stat-card shadow-sm p-3 bg-white">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <span class="text-muted small text-uppercase fw-semibold">Dogs</span>
-                            <h3 class="fw-bold text-dark mt-1 mb-0"><?= $totalDogs ?></h3>
-                        </div>
-                        <div class="stat-icon bg-success bg-opacity-10 text-success">
-                            <i class="bi bi-heart-pulse-fill"></i>
-                        </div>
-                    </div>
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h3><?= $totalDogs ?></h3>
+                    <p>Dogs</p>
+                </div>
+                <div class="stat-icon icon-warning">
+                    <i class="bi bi-bounding-box"></i>
                 </div>
             </div>
-            <div class="col-12 col-sm-6 col-lg-3">
-                <div class="card stat-card shadow-sm p-3 bg-white">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <span class="text-muted small text-uppercase fw-semibold">Cats</span>
-                            <h3 class="fw-bold text-dark mt-1 mb-0"><?= $totalCats ?></h3>
-                        </div>
-                        <div class="stat-icon bg-warning bg-opacity-10 text-warning">
-                            <i class="bi bi-stars"></i>
-                        </div>
-                    </div>
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h3><?= $totalCats ?></h3>
+                    <p>Cats</p>
+                </div>
+                <div class="stat-icon icon-success">
+                    <i class="bi bi-badge-4k"></i>
                 </div>
             </div>
-            <div class="col-12 col-sm-6 col-lg-3">
-                <div class="card stat-card shadow-sm p-3 bg-white">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <span class="text-muted small text-uppercase fw-semibold">Others</span>
-                            <h3 class="fw-bold text-dark mt-1 mb-0"><?= $totalOthers ?></h3>
-                        </div>
-                        <div class="stat-icon bg-info bg-opacity-10 text-info">
-                            <i class="bi bi-grid-fill"></i>
-                        </div>
-                    </div>
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h3><?= $totalOthers ?></h3>
+                    <p>Others</p>
+                </div>
+                <div class="stat-icon icon-secondary">
+                    <i class="bi bi-diagram-3"></i>
                 </div>
             </div>
         </div>
-
-        <!-- Main Pet Table Card -->
-        <div class="card main-card bg-white overflow-hidden shadow-sm">
-            <div class="card-body p-4">
-                
-                <!-- Filter and Search Toolbar -->
-                <form method="GET" action="index.php" class="row g-2 align-items-center mb-4">
-                    <div class="col-12 col-md-5">
-                        <div class="input-group">
-                            <span class="input-group-text bg-white text-muted border-end-0"><i class="bi bi-search"></i></span>
-                            <input type="text" name="search" class="form-control border-start-0" placeholder="Search by pet name, owner, breed..." value="<?= htmlspecialchars($search) ?>">
-                        </div>
-                    </div>
-                    <div class="col-6 col-md-3">
-                        <select name="species" class="form-select" onchange="this.form.submit()">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Pet Records</h2>
+                <div class="filters">
+                    <form method="GET" class="search-box">
+                        <input type="text" name="search" class="form-control" placeholder="Search by name, owner, breed..." value="<?= htmlspecialchars($search) ?>">
+                        <select name="species" class="form-control" onchange="this.form.submit()">
                             <option value="">All Species</option>
                             <option value="Dog" <?= $species_filter === 'Dog' ? 'selected' : '' ?>>Dog</option>
                             <option value="Cat" <?= $species_filter === 'Cat' ? 'selected' : '' ?>>Cat</option>
@@ -272,117 +425,74 @@ if ($countRes && $row = mysqli_fetch_assoc($countRes)) {
                             <option value="Fish" <?= $species_filter === 'Fish' ? 'selected' : '' ?>>Fish</option>
                             <option value="Other" <?= $species_filter === 'Other' ? 'selected' : '' ?>>Other</option>
                         </select>
-                    </div>
-                    <div class="col-6 col-md-4 d-flex gap-2">
-                        <button type="submit" class="btn btn-secondary flex-grow-1">
-                            <i class="bi bi-funnel me-1"></i> Filter
-                        </button>
+                        <button type="submit" class="btn btn-outline" style="color: var(--text-primary); border-color: var(--border);">Search</button>
                         <?php if (!empty($search) || !empty($species_filter)): ?>
-                            <a href="index.php" class="btn btn-outline-secondary" title="Reset Filters">
-                                <i class="bi bi-x-lg"></i>
-                            </a>
+                            <a href="index.php" class="btn btn-outline" style="color: var(--text-primary); border-color: var(--border);">Clear</a>
                         <?php endif; ?>
-                    </div>
-                </form>
-
-                <!-- Pet Records Table -->
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Pet Name</th>
-                                <th>Species</th>
-                                <th>Breed</th>
-                                <th>Age</th>
-                                <th>Gender</th>
-                                <th>Owner Name</th>
-                                <th>Contact</th>
-                                <th>Registered</th>
-                                <th class="text-center">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if ($result && mysqli_num_rows($result) > 0): ?>
-                                <?php $count = 1; while ($pet = mysqli_fetch_assoc($result)): ?>
-                                    <tr>
-                                        <td class="text-muted fw-semibold"><?= $count++ ?></td>
-                                        <td>
-                                            <span class="fw-bold text-dark"><?= htmlspecialchars($pet['pet_name']) ?></span>
-                                        </td>
-                                        <td>
-                                            <?php
-                                                $sp = strtolower($pet['species']);
-                                                $badgeClass = 'bg-secondary';
-                                                if ($sp === 'dog') $badgeClass = 'bg-success bg-opacity-10 text-success border border-success border-opacity-25';
-                                                elseif ($sp === 'cat') $badgeClass = 'bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25';
-                                                elseif ($sp === 'bird') $badgeClass = 'bg-info bg-opacity-10 text-info border border-info border-opacity-25';
-                                                elseif ($sp === 'fish') $badgeClass = 'bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25';
-                                            ?>
-                                            <span class="badge <?= $badgeClass ?> badge-species">
-                                                <?= htmlspecialchars($pet['species']) ?>
-                                            </span>
-                                        </td>
-                                        <td><?= !empty($pet['breed']) ? htmlspecialchars($pet['breed']) : '<span class="text-muted fst-italic">N/A</span>' ?></td>
-                                        <td>
-                                            <?= !empty($pet['age']) ? htmlspecialchars($pet['age']) . ' yr' . ($pet['age'] > 1 ? 's' : '') : '<span class="text-muted fst-italic">N/A</span>' ?>
-                                        </td>
-                                        <td>
-                                            <?php if ($pet['gender'] === 'Male'): ?>
-                                                <span class="text-primary"><i class="bi bi-gender-male"></i> Male</span>
-                                            <?php elseif ($pet['gender'] === 'Female'): ?>
-                                                <span class="text-danger"><i class="bi bi-gender-female"></i> Female</span>
-                                            <?php else: ?>
-                                                <span class="text-muted">Unknown</span>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td class="fw-semibold text-secondary">
-                                            <?= !empty($pet['owner_name']) ? htmlspecialchars($pet['owner_name']) : '<span class="text-muted fst-italic">N/A</span>' ?>
-                                        </td>
-                                        <td>
-                                            <?= !empty($pet['contact_number']) ? htmlspecialchars($pet['contact_number']) : '<span class="text-muted fst-italic">N/A</span>' ?>
-                                        </td>
-                                        <td class="text-muted small">
-                                            <?= isset($pet['created_at']) ? date('M d, Y', strtotime($pet['created_at'])) : '-' ?>
-                                        </td>
-                                        <td class="text-center">
-                                            <div class="btn-group btn-group-sm">
-                                                <a href="index.php?delete_id=<?= $pet['id'] ?>" 
-                                                   class="btn btn-outline-danger" 
-                                                   onclick="return confirm('Are you sure you want to delete this record (<?= htmlspecialchars(addslashes($pet['pet_name'])) ?>)?');"
-                                                   title="Delete Pet Record">
-                                                    <i class="bi bi-trash"></i>
-                                                </a>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                <?php endwhile; ?>
-                            <?php else: ?>
+                    </form>
+                    <a href="add.php" class="btn btn-primary">
+                        <i class="bi bi-plus-lg"></i> Add New Pet
+                    </a>
+                </div>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Pet Name</th>
+                            <th>Species</th>
+                            <th>Breed</th>
+                            <th>Age</th>
+                            <th>Gender</th>
+                            <th>Owner</th>
+                            <th>Contact</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (mysqli_num_rows($result) > 0): ?>
+                            <?php while ($row = mysqli_fetch_assoc($result)): ?>
+                                <?php
+                                $spec = strtolower($row['species']);
+                                $badgeClass = 'badge-other';
+                                if ($spec === 'dog') $badgeClass = 'badge-dog';
+                                if ($spec === 'cat') $badgeClass = 'badge-cat';
+                                ?>
                                 <tr>
-                                    <td colspan="10" class="text-center py-5">
-                                        <div class="d-flex flex-column align-items-center">
-                                            <i class="bi bi-folder-x fs-1 text-muted mb-2"></i>
-                                            <h5 class="text-muted fw-semibold">No Pet Records Found</h5>
-                                            <p class="text-muted small mb-3">
-                                                <?= (!empty($search) || !empty($species_filter)) ? 'Try adjusting your search filters.' : 'Get started by adding your first pet record.' ?>
-                                            </p>
-                                            <a href="add.php" class="btn btn-primary btn-sm rounded-pill px-3">
-                                                <i class="bi bi-plus-circle me-1"></i> Add Pet Now
+                                    <td>#<?= $row['id'] ?></td>
+                                    <td><strong><?= htmlspecialchars($row['pet_name']) ?></strong></td>
+                                    <td><span class="badge <?= $badgeClass ?>"><?= htmlspecialchars($row['species']) ?></span></td>
+                                    <td><?= htmlspecialchars($row['breed'] ?? '-') ?></td>
+                                    <td><?= $row['age'] !== null ? $row['age'] . ' yrs' : '-' ?></td>
+                                    <td><?= htmlspecialchars($row['gender']) ?></td>
+                                    <td><?= htmlspecialchars($row['owner_name'] ?? '-') ?></td>
+                                    <td><?= htmlspecialchars($row['contact_number'] ?? '-') ?></td>
+                                    <td>
+                                        <div style="display: flex; gap: 0.5rem;">
+                                            <a href="edit.php?id=<?= $row['id'] ?>" class="btn btn-outline btn-sm" style="color: var(--text-primary); border-color: var(--border);">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <a href="index.php?delete_id=<?= $row['id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this record?')">
+                                                <i class="bi bi-trash"></i>
                                             </a>
                                         </div>
                                     </td>
                                 </tr>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
-                </div>
-
+                            <?php endwhile; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="9" class="empty-state">
+                                    <i class="bi bi-inbox"></i>
+                                    <h3>No pet records found</h3>
+                                    <p>Start by adding your first pet record</p>
+                                </td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
             </div>
         </div>
-
     </div>
-
-    <!-- Bootstrap 5 JS Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
