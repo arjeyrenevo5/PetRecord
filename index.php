@@ -401,7 +401,7 @@ if ($countRes && $row = mysqli_fetch_assoc($countRes)) {
                     <p>Cats</p>
                 </div>
                 <div class="stat-icon icon-success">
-                    <i class="bi bi-badge-4k"></i>
+                    <i class="bi bi-github"></i>
                 </div>
             </div>
             <div class="stat-card">

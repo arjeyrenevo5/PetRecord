@@ -84,32 +84,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             display: flex;
             flex-direction: column;
         }
-        nav {
-            background: rgba(15, 23, 42, 0.96);
-            color: white;
-            padding: 1rem 2rem;
-            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
-        }
-        .nav-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .brand {
-            font-weight: 700;
-            font-size: 1.45rem;
-            text-decoration: none;
-            color: white;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            letter-spacing: -0.02em;
-        }
-        .brand span {
-            color: var(--warning);
-        }
         .btn {
             padding: 0.6rem 1rem;
             border-radius: 10px;
@@ -231,14 +205,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </style>
 </head>
 <body>
-    <nav>
-        <div class="nav-container">
-            <a href="index.php" class="brand">
-                <i class="bi bi-shield-shaded"></i>
-                Pet<span>Record</span>
-            </a>
-        </div>
-    </nav>
     <div class="container">
         <div class="auth-card">
             <div class="auth-icon">
