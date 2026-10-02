@@ -78,15 +78,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <style>
         :root {
             --primary: #4f46e5;
-            --primary-light: #818cf8;
-            --bg: #f8fafc;
+            --primary-dark: #3730a3;
+            --primary-soft: #eef2ff;
+            --bg: #f3f6ff;
             --card-bg: #ffffff;
-            --text-primary: #1e293b;
-            --text-secondary: #64748b;
-            --border: #e2e8f0;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --border: #dfe7f5;
             --success: #22c55e;
             --danger: #ef4444;
-            --warning: #f59e0b;
+            --warning: #fbbf24;
+            --shadow: 0 24px 60px rgba(79, 70, 229, 0.12);
         }
         * {
             margin: 0;
@@ -95,93 +97,103 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background: var(--bg);
+            background:
+                radial-gradient(circle at top left, rgba(99, 102, 241, 0.12), transparent 30%),
+                linear-gradient(135deg, #f8fbff 0%, #eef2ff 100%);
             color: var(--text-primary);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
         }
         nav {
-            background: #0f172a;
+            background: rgba(15, 23, 42, 0.96);
             color: white;
             padding: 1rem 2rem;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
         }
         .nav-container {
             max-width: 1200px;
             margin: 0 auto;
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: space-between;
         }
         .brand {
             font-weight: 700;
-            font-size: 1.5rem;
+            font-size: 1.45rem;
             text-decoration: none;
             color: white;
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            letter-spacing: -0.02em;
         }
         .brand span {
             color: var(--warning);
         }
-        .nav-links {
-            display: flex;
-            gap: 1rem;
-        }
         .btn {
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
+            padding: 0.6rem 1rem;
+            border-radius: 10px;
             text-decoration: none;
-            font-weight: 500;
-            transition: all 0.2s;
+            font-weight: 600;
+            transition: all 0.2s ease;
             border: none;
             cursor: pointer;
             font-size: 0.95rem;
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 0.5rem;
         }
-        .btn-outline {
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: white;
-        }
-        .btn-outline:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
         .btn-primary {
-            background: var(--primary);
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white;
+            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2);
         }
         .btn-primary:hover {
-            background: var(--primary-light);
+            transform: translateY(-1px);
+            box-shadow: 0 12px 24px rgba(79, 70, 229, 0.25);
         }
         .container {
             flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 2rem 1rem;
+            padding: 2.5rem 1rem;
         }
         .auth-card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
             width: 100%;
             max-width: 480px;
-            padding: 2.5rem;
+            padding: 2.25rem 2rem;
+            backdrop-filter: blur(6px);
+        }
+        .auth-icon {
+            width: 68px;
+            height: 68px;
+            margin: 0 auto 1.25rem;
+            border-radius: 18px;
+            display: grid;
+            place-items: center;
+            background: linear-gradient(135deg, var(--primary-soft), rgba(79, 70, 229, 0.12));
+            color: var(--primary);
+            font-size: 2rem;
         }
         .auth-header {
             text-align: center;
             margin-bottom: 2rem;
         }
         .auth-header h1 {
-            font-size: 1.75rem;
+            font-size: 2rem;
             margin-bottom: 0.5rem;
+            letter-spacing: -0.04em;
         }
         .auth-header p {
             color: var(--text-secondary);
+            font-size: 0.96rem;
         }
         .form-group {
             margin-bottom: 1.25rem;
@@ -189,51 +201,58 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .form-label {
             display: block;
             font-weight: 600;
-            margin-bottom: 0.5rem;
-            font-size: 0.95rem;
+            margin-bottom: 0.55rem;
+            font-size: 0.92rem;
+            color: var(--text-primary);
         }
         .form-control {
             width: 100%;
-            padding: 0.75rem 1rem;
+            padding: 0.85rem 0.95rem;
             border: 1px solid var(--border);
-            border-radius: 8px;
-            font-size: 1rem;
+            border-radius: 12px;
+            font-size: 0.98rem;
             font-family: inherit;
-            transition: border-color 0.2s;
+            background: #fff;
+            transition: all 0.2s ease;
         }
         .form-control:focus {
             outline: none;
-            border-color: var(--primary);
+            border-color: rgba(79, 70, 229, 0.5);
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12);
         }
         .alert {
-            padding: 0.75rem 1rem;
-            border-radius: 8px;
+            padding: 0.85rem 1rem;
+            border-radius: 12px;
             margin-bottom: 1rem;
+            font-size: 0.92rem;
         }
         .alert-danger {
-            background: rgba(239, 68, 68, 0.1);
+            background: rgba(239, 68, 68, 0.08);
             color: var(--danger);
-            border: 1px solid rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.15);
         }
         .alert-success {
-            background: rgba(34, 197, 94, 0.1);
+            background: rgba(34, 197, 94, 0.08);
             color: var(--success);
-            border: 1px solid rgba(34, 197, 94, 0.2);
+            border: 1px solid rgba(34, 197, 94, 0.15);
         }
         .btn-block {
             width: 100%;
             justify-content: center;
-            padding: 0.875rem;
+            padding: 0.95rem 1rem;
+            margin-top: 0.5rem;
+            border-radius: 12px;
         }
         .auth-footer {
             text-align: center;
             margin-top: 1.5rem;
             color: var(--text-secondary);
+            font-size: 0.92rem;
         }
         .auth-footer a {
             color: var(--primary);
             text-decoration: none;
-            font-weight: 600;
+            font-weight: 700;
         }
     </style>
 </head>
@@ -244,13 +263,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <i class="bi bi-shield-shaded"></i>
                 Pet<span>Record</span>
             </a>
-            <div class="nav-links">
-                <a href="login.php" class="btn btn-outline">Login</a>
-            </div>
         </div>
     </nav>
     <div class="container">
         <div class="auth-card">
+            <div class="auth-icon">
+                <i class="bi bi-person-plus"></i>
+            </div>
             <div class="auth-header">
                 <h1>Create an Account</h1>
                 <p>Register to start managing pet records</p>
