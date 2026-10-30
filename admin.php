@@ -1,5 +1,6 @@
 <?php
 require_once 'db.php';
+require_once 'assets/paw.php';
 session_start();
 
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
@@ -55,10 +56,20 @@ if (isset($_POST['update_role'])) {
 
 if (isset($_GET['msg']) && isset($_GET['type'])) {
     $message = $_GET['msg'];
-    $messageType = $_GET['type'];
+    $messageType = in_array($_GET['type'], ['success', 'danger', 'warning'], true) ? $_GET['type'] : 'success';
 }
 
 $result = $conn->query("SELECT id, username, email, role, created_at FROM users ORDER BY created_at DESC");
+$users = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
+
+$totalUsers = count($users);
+$totalAdmins = 0;
+foreach ($users as $u) {
+    if ($u['role'] === 'admin') {
+        $totalAdmins++;
+    }
+}
+$totalMembers = $totalUsers - $totalAdmins;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -68,241 +79,156 @@ $result = $conn->query("SELECT id, username, email, role, created_at FROM users 
     <title>Admin Panel - PetRecord</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #4f46e5;
-            --bg: #f8fafc;
-            --card-bg: #ffffff;
-            --text-primary: #1e293b;
-            --text-secondary: #64748b;
-            --border: #e2e8f0;
-            --success: #22c55e;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-        }
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background: var(--bg);
-            color: var(--text-primary);
-        }
-        nav {
-            background: #0f172a;
-            color: white;
-            padding: 1rem 2rem;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-        .nav-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .brand {
-            font-weight: 700;
-            font-size: 1.5rem;
-            text-decoration: none;
-            color: white;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .brand span {
-            color: var(--warning);
-        }
-        .nav-links {
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-        }
-        .user-info {
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 0.95rem;
-        }
-        .btn {
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.2s;
-            border: none;
-            cursor: pointer;
-            font-size: 0.95rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .btn-outline {
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: white;
-        }
-        .btn-outline:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-        .btn-danger {
-            background: var(--danger);
-            color: white;
-        }
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem 1rem;
-        }
-        .header {
-            margin-bottom: 2rem;
-        }
-        .header h1 {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-        }
-        .header p {
-            color: var(--text-secondary);
-        }
-        .card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-            overflow: hidden;
-        }
-        .alert {
-            padding: 1rem 1.5rem;
-            margin-bottom: 1rem;
-            border-radius: 12px;
-        }
-        .alert-success {
-            background: rgba(34, 197, 94, 0.1);
-            color: var(--success);
-            border: 1px solid rgba(34, 197, 94, 0.2);
-        }
-        .alert-danger {
-            background: rgba(239, 68, 68, 0.1);
-            color: var(--danger);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            padding: 1rem 1.5rem;
-            text-align: left;
-            border-bottom: 1px solid var(--border);
-        }
-        th {
-            background: #f8fafc;
-            font-weight: 600;
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        .badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-        .badge-admin {
-            background: rgba(79, 70, 229, 0.1);
-            color: var(--primary);
-        }
-        .badge-user {
-            background: rgba(100, 116, 139, 0.1);
-            color: var(--text-secondary);
-        }
-        .actions {
-            display: flex;
-            gap: 0.5rem;
-            align-items: center;
-        }
-        select {
-            padding: 0.5rem;
-            border-radius: 6px;
-            border: 1px solid var(--border);
-            font-family: inherit;
-        }
-    </style>
+    <link href="assets/css/style.css" rel="stylesheet">
 </head>
-<body>
-    <nav>
+<body class="admin-page">
+    <button class="sidebar-toggle" id="sidebar-toggle" type="button" aria-controls="sidebar-nav" aria-expanded="true" aria-label="Hide navigation">
+        <i class="bi bi-x-lg" aria-hidden="true"></i>
+    </button>
+    <nav id="sidebar-nav">
         <div class="nav-container">
             <a href="index.php" class="brand">
-                <i class="bi bi-shield-shaded"></i>
-                Pet<span>Record</span> <small style="font-size: 0.875rem; opacity: 0.8;">Admin</small>
+                <i class="brand-mark"><?= paw_svg() ?></i>
+                Pet<span>Record</span> <small>Admin</small>
             </a>
             <div class="nav-links">
-                <span class="user-info">Welcome, <?= htmlspecialchars($_SESSION['username']) ?></span>
-                <a href="index.php" class="btn btn-outline">View Pets</a>
+                <a href="index.php#dashboard" class="btn btn-outline"><i class="bi bi-house-heart"></i> Dashboard</a>
+                <a href="profile.php" class="btn btn-outline"><i class="bi bi-person"></i> Profile</a>
                 <a href="logout.php" class="btn btn-outline">
                     <i class="bi bi-box-arrow-right"></i> Logout
                 </a>
             </div>
         </div>
     </nav>
-    <div class="container">
-        <div class="header">
-            <h1>Admin Dashboard</h1>
-            <p>Manage user accounts and permissions</p>
-        </div>
-        <?php if ($message): ?>
-            <div class="alert alert-<?= $messageType ?>"><?= htmlspecialchars($message) ?></div>
-        <?php endif; ?>
-        <div class="card">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Username</th>
-                        <th>Email</th>
-                        <th>Role</th>
-                        <th>Joined</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php while ($user = $result->fetch_assoc()): ?>
-                        <tr>
-                            <td><strong><?= htmlspecialchars($user['username']) ?></strong></td>
-                            <td><?= htmlspecialchars($user['email']) ?></td>
-                            <td>
-                                <span class="badge badge-<?= $user['role'] ?>"><?= htmlspecialchars(ucfirst($user['role'])) ?></span>
-                            </td>
-                            <td><?= date('M d, Y', strtotime($user['created_at'])) ?></td>
-                            <td>
-                                <div class="actions">
-                                    <form method="POST" action="admin.php" style="display: flex; gap: 0.5rem; align-items: center;">
-                                        <input type="hidden" name="user_id" value="<?= $user['id'] ?>">
-                                        <select name="role">
-                                            <option value="user" <?= $user['role'] === 'user' ? 'selected' : '' ?>>User</option>
-                                            <option value="admin" <?= $user['role'] === 'admin' ? 'selected' : '' ?>>Admin</option>
-                                        </select>
-                                        <button type="submit" name="update_role" class="btn btn-primary">Update</button>
-                                    </form>
-                                    <?php if ($user['id'] != $_SESSION['user_id']): ?>
-                                        <a href="admin.php?delete_id=<?= $user['id'] ?>" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this user?')">
-                                            <i class="bi bi-trash"></i>
-                                        </a>
-                                    <?php endif; ?>
-                                </div>
-                            </td>
-                        </tr>
-                    <?php endwhile; ?>
-                </tbody>
-            </table>
-        </div>
+    <div class="profile-card" aria-label="User profile">
+        <span class="profile-avatar" aria-hidden="true"><?= htmlspecialchars(strtoupper(substr($_SESSION['username'], 0, 1))) ?></span>
+        <span class="profile-details">
+            <span class="profile-name"><?= htmlspecialchars($_SESSION['username']) ?></span>
+            <span class="profile-role">Administrator</span>
+        </span>
     </div>
+
+    <div class="container">
+        <?php if ($message): ?>
+            <div class="alert alert-<?= $messageType ?> toast-notification" role="<?= $messageType === 'danger' ? 'alert' : 'status' ?>" aria-live="<?= $messageType === 'danger' ? 'assertive' : 'polite' ?>">
+                <i class="bi <?= $messageType === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill' ?>"></i>
+                <span><?= htmlspecialchars($message) ?></span>
+                <button class="toast-close" type="button" aria-label="Dismiss notification"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+            </div>
+        <?php endif; ?>
+
+        <section class="admin-hero" id="admin-overview">
+            <div class="admin-hero-copy">
+                <span class="admin-kicker"><i class="bi bi-shield-lock-fill"></i> PetRecord Control Center</span>
+                <h1>Administration</h1>
+                <p>Manage accounts, assign access levels, and keep your community organized.</p>
+            </div>
+            <div class="admin-hero-mark" aria-hidden="true"><i class="bi bi-shield-check"></i></div>
+            <a class="admin-hero-link" href="index.php#dashboard"><i class="bi bi-arrow-up-right"></i> Open pet dashboard</a>
+        </section>
+
+        <div class="admin-stats">
+            <div class="mini-card admin-stat-card">
+                <span class="mini-icon"><i class="bi bi-people-fill"></i></span>
+                <div>
+                    <strong><?= $totalUsers ?></strong>
+                    <span>Registered accounts</span>
+                </div>
+            </div>
+            <div class="mini-card admin-stat-card">
+                <span class="mini-icon"><i class="bi bi-shield-lock-fill"></i></span>
+                <div>
+                    <strong><?= $totalAdmins ?></strong>
+                    <span>Admin accounts</span>
+                </div>
+            </div>
+            <div class="mini-card admin-stat-card">
+                <span class="mini-icon"><i class="bi bi-person-heart"></i></span>
+                <div>
+                    <strong><?= $totalMembers ?></strong>
+                    <span>Pet owner accounts</span>
+                </div>
+            </div>
+        </div>
+
+        <section class="card admin-users-card" id="user-management">
+            <div class="card-header">
+                <div class="card-title">
+                    <i class="bi bi-person-gear"></i>
+                    <div>
+                        User Management
+                        <small>Review accounts and control their access</small>
+                    </div>
+                </div>
+                <span class="admin-user-count"><i class="bi bi-person-check-fill"></i> <?= $totalUsers ?> total</span>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Role</th>
+                            <th>Joined</th>
+                            <th style="text-align: right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if ($totalUsers > 0): ?>
+                            <?php foreach ($users as $user): ?>
+                                <tr>
+                                    <td>
+                                        <div class="user-cell">
+                                            <span class="user-avatar"><?= htmlspecialchars(substr($user['username'], 0, 1)) ?></span>
+                                            <div>
+                                                <strong><?= htmlspecialchars($user['username']) ?></strong>
+                                                <small><?= htmlspecialchars($user['email']) ?></small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-<?= $user['role'] === 'admin' ? 'admin' : 'user' ?>">
+                                            <i class="bi <?= $user['role'] === 'admin' ? 'bi-shield-fill-check' : 'bi-person-fill' ?>"></i>
+                                            <?= htmlspecialchars(ucfirst($user['role'])) ?>
+                                        </span>
+                                    </td>
+                                    <td><?= date('M d, Y', strtotime($user['created_at'])) ?></td>
+                                    <td>
+                                        <div class="actions" style="justify-content: flex-end;">
+                                            <form method="POST" action="admin.php" class="role-form">
+                                                <input type="hidden" name="user_id" value="<?= $user['id'] ?>">
+                                                <select name="role" aria-label="Role for <?= htmlspecialchars($user['username']) ?>">
+                                                    <option value="user" <?= $user['role'] === 'user' ? 'selected' : '' ?>>User</option>
+                                                    <option value="admin" <?= $user['role'] === 'admin' ? 'selected' : '' ?>>Admin</option>
+                                                </select>
+                                                <button type="submit" name="update_role" class="btn btn-primary">
+                                                    <i class="bi bi-arrow-repeat"></i> Update
+                                                </button>
+                                            </form>
+                                            <?php if ($user['id'] != $_SESSION['user_id']): ?>
+                                                <a href="admin.php?delete_id=<?= $user['id'] ?>" class="icon-btn danger" title="Delete user" aria-label="Delete <?= htmlspecialchars($user['username']) ?>" onclick="return confirm('Are you sure you want to delete this user?')">
+                                                    <i class="bi bi-trash"></i>
+                                                </a>
+                                            <?php endif; ?>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="4" class="empty-state">
+                                    <i class="bi bi-people"></i>
+                                    <h3>No users yet</h3>
+                                    <p>Registered accounts will appear here.</p>
+                                </td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+    <script src="assets/js/sidebar.js" defer></script>
 </body>
 </html>

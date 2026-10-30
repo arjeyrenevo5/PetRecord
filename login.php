@@ -1,5 +1,6 @@
 <?php
 require_once 'db.php';
+require_once 'assets/paw.php';
 session_start();
 
 if (isset($_SESSION['user_id'])) {
@@ -53,160 +54,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Login - PetRecord</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #4f46e5;
-            --primary-dark: #3730a3;
-            --primary-soft: #eef2ff;
-            --bg: #f3f6ff;
-            --card-bg: #ffffff;
-            --text-primary: #111827;
-            --text-secondary: #6b7280;
-            --border: #dfe7f5;
-            --danger: #ef4444;
-            --warning: #fbbf24;
-            --shadow: 0 24px 60px rgba(79, 70, 229, 0.12);
-        }
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background:
-                radial-gradient(circle at top left, rgba(99, 102, 241, 0.12), transparent 30%),
-                linear-gradient(135deg, #f8fbff 0%, #eef2ff 100%);
-            color: var(--text-primary);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-        .btn {
-            padding: 0.6rem 1rem;
-            border-radius: 10px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.2s ease;
-            border: none;
-            cursor: pointer;
-            font-size: 0.95rem;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-            box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2);
-        }
-        .btn-primary:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 12px 24px rgba(79, 70, 229, 0.25);
-        }
-        .container {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2.5rem 1rem;
-        }
-        .auth-card {
-            background: rgba(255, 255, 255, 0.9);
-            border: 1px solid rgba(255, 255, 255, 0.7);
-            border-radius: 24px;
-            box-shadow: var(--shadow);
-            width: 100%;
-            max-width: 440px;
-            padding: 2.25rem 2rem;
-            backdrop-filter: blur(6px);
-        }
-        .auth-icon {
-            width: 68px;
-            height: 68px;
-            margin: 0 auto 1.25rem;
-            border-radius: 18px;
-            display: grid;
-            place-items: center;
-            background: linear-gradient(135deg, var(--primary-soft), rgba(79, 70, 229, 0.12));
-            color: var(--primary);
-            font-size: 2rem;
-        }
-        .auth-header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        .auth-header h1 {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-            letter-spacing: -0.04em;
-        }
-        .auth-header p {
-            color: var(--text-secondary);
-            font-size: 0.96rem;
-        }
-        .form-group {
-            margin-bottom: 1.25rem;
-        }
-        .form-label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 0.55rem;
-            font-size: 0.92rem;
-            color: var(--text-primary);
-        }
-        .form-control {
-            width: 100%;
-            padding: 0.85rem 0.95rem;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            font-size: 0.98rem;
-            font-family: inherit;
-            background: #fff;
-            transition: all 0.2s ease;
-        }
-        .form-control:focus {
-            outline: none;
-            border-color: rgba(79, 70, 229, 0.5);
-            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12);
-        }
-        .alert {
-            padding: 0.85rem 1rem;
-            border-radius: 12px;
-            margin-bottom: 1rem;
-            font-size: 0.92rem;
-        }
-        .alert-danger {
-            background: rgba(239, 68, 68, 0.08);
-            color: var(--danger);
-            border: 1px solid rgba(239, 68, 68, 0.15);
-        }
-        .btn-block {
-            width: 100%;
-            justify-content: center;
-            padding: 0.95rem 1rem;
-            margin-top: 0.5rem;
-            border-radius: 12px;
-        }
-        .auth-footer {
-            text-align: center;
-            margin-top: 1.5rem;
-            color: var(--text-secondary);
-            font-size: 0.92rem;
-        }
-        .auth-footer a {
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 700;
-        }
-    </style>
+    <link href="assets/css/auth.css" rel="stylesheet">
 </head>
 <body>
-    <div class="container">
-        <div class="auth-card">
+    <div class="auth-page">
+        <aside class="brand-panel">
+            <div class="animal-art" aria-hidden="true">
+                <span class="animal-face"><?= paw_svg() ?></span>
+                <span class="animal-face"><i class="bi bi-heart-fill"></i></span>
+                <i class="animal-paw animal-paw-one"><?= paw_svg() ?></i>
+                <i class="animal-paw animal-paw-two"><?= paw_svg() ?></i>
+            </div>
+            <div class="brand-badge"><?= paw_svg() ?> PetRecord</div>
+            <h2>Keep every pet story in one safe place.</h2>
+            <p>Track health notes, feeding schedules, visit logs, and special moments for every furry friend you love.</p>
+            <ul class="feature-list">
+                <li><span class="feature-badge"><i class="bi bi-heart-pulse"></i></span> Health and care tracking</li>
+                <li><span class="feature-badge"><i class="bi bi-journal-medical"></i></span> Vaccines and appointments</li>
+                <li><span class="feature-badge"><i class="bi bi-stars"></i></span> Happy memories saved</li>
+            </ul>
+            <div class="mini-stats">
+                <div class="mini-stat">
+                    <strong>2.4k+</strong>
+                    <span>happy pets</span>
+                </div>
+                <div class="mini-stat">
+                    <strong>96%</strong>
+                    <span>care retention</span>
+                </div>
+                <div class="mini-stat">
+                    <strong>24/7</strong>
+                    <span>pet support</span>
+                </div>
+            </div>
+        </aside>
+
+        <main class="auth-card">
             <div class="auth-icon">
                 <i class="bi bi-person-lock"></i>
             </div>
@@ -223,19 +108,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
             <form method="POST" action="login.php">
                 <div class="form-group">
-                    <label class="form-label">Username or Email</label>
-                    <input type="text" name="username" class="form-control" placeholder="Enter username or email" value="<?= htmlspecialchars($_POST['username'] ?? '') ?>" required>
+                    <label class="form-label" for="username">Username or Email</label>
+                    <div class="input-wrap">
+                        <i class="bi bi-person field-icon"></i>
+                        <input type="text" id="username" name="username" class="form-control" placeholder="Enter username or email" value="<?= htmlspecialchars($_POST['username'] ?? '') ?>" autocomplete="username" required>
+                    </div>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Password</label>
-                    <input type="password" name="password" class="form-control" placeholder="Enter password" required>
+                    <label class="form-label" for="password">Password</label>
+                    <div class="input-wrap">
+                        <i class="bi bi-lock field-icon"></i>
+                        <input type="password" id="password" name="password" class="form-control has-toggle" placeholder="Enter password" autocomplete="current-password" required>
+                        <button type="button" class="password-toggle" data-toggle-password="#password" aria-label="Show password">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
                 </div>
-                <button type="submit" class="btn btn-primary btn-block">Login</button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-box-arrow-in-right"></i> Login
+                </button>
             </form>
             <div class="auth-footer">
                 Don't have an account? <a href="register.php">Register here</a>
             </div>
-        </div>
+            <p class="auth-note"><i class="bi bi-shield-lock-fill"></i> Your pet records stay private and secure.</p>
+        </main>
     </div>
+
+    <script>
+        document.querySelectorAll('[data-toggle-password]').forEach(function (button) {
+            button.addEventListener('click', function () {
+                var input = document.querySelector(button.getAttribute('data-toggle-password'));
+                if (!input) return;
+                var icon = button.querySelector('i');
+                var show = input.type === 'password';
+                input.type = show ? 'text' : 'password';
+                icon.className = show ? 'bi bi-eye-slash' : 'bi bi-eye';
+                button.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+            });
+        });
+    </script>
 </body>
 </html>
