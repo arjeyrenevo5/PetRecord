@@ -81,35 +81,33 @@ $userStmt->close();
     <link href="assets/css/style.css" rel="stylesheet">
 </head>
 <body>
-    <button class="sidebar-toggle" id="sidebar-toggle" type="button" aria-controls="sidebar-nav" aria-expanded="true" aria-label="Hide navigation">
-        <i class="bi bi-x-lg" aria-hidden="true"></i>
-    </button>
     <nav id="sidebar-nav">
+        <button class="sidebar-toggle" id="sidebar-toggle" type="button" aria-controls="sidebar-links" aria-expanded="true" aria-label="Hide navigation">
+            <i class="bi bi-x-lg" aria-hidden="true"></i>
+        </button>
         <div class="nav-container">
             <a href="index.php" class="brand">
                 <i class="brand-mark"><?= paw_svg() ?></i>
                 Pet<span>Record</span>
             </a>
-            <div class="nav-links">
+            <div class="nav-links" id="sidebar-links">
                 <a href="index.php#dashboard" class="btn btn-outline"><i class="bi bi-speedometer2"></i> Dashboard</a>
                 <?php if ($_SESSION['role'] === 'admin'): ?>
                     <a href="admin.php" class="btn btn-outline"><i class="bi bi-gear"></i> Admin</a>
                 <?php endif; ?>
-                <a href="profile.php" class="btn btn-outline" aria-current="page"><i class="bi bi-person"></i> Profile</a>
+                <a href="profile.php" class="nav-user-card" aria-label="User profile" aria-current="page">
+                    <span class="profile-avatar" aria-hidden="true"><?= htmlspecialchars(strtoupper(substr($_SESSION['username'], 0, 1))) ?></span>
+                    <span class="profile-details">
+                        <span class="profile-name"><?= htmlspecialchars($_SESSION['username']) ?></span>
+                        <span class="profile-role"><?= $_SESSION['role'] === 'admin' ? 'Administrator' : 'Pet Owner' ?></span>
+                    </span>
+                </a>
                 <a href="logout.php" class="btn btn-outline">
                     <i class="bi bi-box-arrow-right"></i> Logout
                 </a>
             </div>
         </div>
     </nav>
-    <div class="profile-card" aria-label="User profile">
-        <span class="profile-avatar" aria-hidden="true"><?= htmlspecialchars(strtoupper(substr($_SESSION['username'], 0, 1))) ?></span>
-        <span class="profile-details">
-            <span class="profile-name"><?= htmlspecialchars($_SESSION['username']) ?></span>
-            <span class="profile-role"><?= $_SESSION['role'] === 'admin' ? 'Administrator' : 'Pet Owner' ?></span>
-        </span>
-    </div>
-
     <div class="container">
         <section class="card" style="max-width:720px;margin:0 auto;">
             <div class="card-header">
@@ -163,5 +161,3 @@ $userStmt->close();
     <script src="assets/js/sidebar.js" defer></script>
 </body>
 </html>
-PHP
-echo done

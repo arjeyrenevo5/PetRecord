@@ -20,6 +20,7 @@ ensurePetHealthRecordsSchema($conn);
 
 $message = "";
 $messageType = "";
+$greeting = 'Good day';
 
 if (isset($_POST['delete_pet_id'])) {
     $deleteAllowed = $_SESSION['role'] === 'admin';
@@ -220,35 +221,33 @@ $reminders = $reminderResult ? mysqli_fetch_all($reminderResult, MYSQLI_ASSOC) :
     <link href="assets/css/style.css" rel="stylesheet">
 </head>
 <body class="dashboard-page">
-    <button class="sidebar-toggle" id="sidebar-toggle" type="button" aria-controls="sidebar-nav" aria-expanded="true" aria-label="Hide navigation">
-        <i class="bi bi-x-lg" aria-hidden="true"></i>
-    </button>
     <nav id="sidebar-nav">
+        <button class="sidebar-toggle" id="sidebar-toggle" type="button" aria-controls="sidebar-links" aria-expanded="true" aria-label="Hide navigation">
+            <i class="bi bi-x-lg" aria-hidden="true"></i>
+        </button>
         <div class="nav-container">
             <a href="index.php" class="brand">
                 <i class="brand-mark"><?= paw_svg() ?></i>
                 Pet<span>Record</span>
             </a>
-            <div class="nav-links">
+            <div class="nav-links" id="sidebar-links">
                 <?php if ($_SESSION['role'] === 'admin'): ?>
                     <a href="admin.php" class="btn btn-outline"><i class="bi bi-gear"></i> Admin Panel</a>
                 <?php endif; ?>
                 <a href="index.php#my-pets" class="btn btn-outline" aria-current="page"><i class="bi bi-heart-pulse"></i> My Pets</a>
-                <a href="profile.php" class="btn btn-outline"><i class="bi bi-person"></i> Profile</a>
+                <a href="profile.php" class="nav-user-card" aria-label="User profile">
+                    <span class="profile-avatar" aria-hidden="true"><?= htmlspecialchars(strtoupper(substr($_SESSION['username'], 0, 1))) ?></span>
+                    <span class="profile-details">
+                        <span class="profile-name"><?= htmlspecialchars($_SESSION['username']) ?></span>
+                        <span class="profile-role"><?= $_SESSION['role'] === 'admin' ? 'Administrator' : 'Pet Owner' ?></span>
+                    </span>
+                </a>
                 <a href="logout.php" class="btn btn-outline">
                     <i class="bi bi-box-arrow-right"></i> Logout
                 </a>
             </div>
         </div>
     </nav>
-    <div class="profile-card" aria-label="User profile">
-        <span class="profile-avatar" aria-hidden="true"><?= htmlspecialchars(strtoupper(substr($_SESSION['username'], 0, 1))) ?></span>
-        <span class="profile-details">
-            <span class="profile-name"><?= htmlspecialchars($_SESSION['username']) ?></span>
-            <span class="profile-role"><?= $_SESSION['role'] === 'admin' ? 'Administrator' : 'Pet Owner' ?></span>
-        </span>
-    </div>
-
     <div class="container">
         <?php if ($message): ?>
             <div class="alert alert-<?= $messageType ?> toast-notification" role="<?= $messageType === 'danger' ? 'alert' : 'status' ?>" aria-live="<?= $messageType === 'danger' ? 'assertive' : 'polite' ?>">
@@ -261,7 +260,7 @@ $reminders = $reminderResult ? mysqli_fetch_all($reminderResult, MYSQLI_ASSOC) :
         <section class="page-head" id="dashboard">
             <div>
                 <span class="eyebrow"><i class="bi bi-house-heart"></i> Pet Dashboard</span>
-                <h1>Welcome back, <?= htmlspecialchars($_SESSION['username']) ?></h1>
+                <h1><?= $greeting ?>, <?= htmlspecialchars($_SESSION['username']) ?></h1>
                 <p class="page-sub">A happy little home for every pet profile. Keep their details organized and easy to find.</p>
             </div>
             <div class="page-actions">

@@ -84,32 +84,30 @@ $totalMembers = $totalUsers - $totalAdmins;
     <link href="assets/css/style.css" rel="stylesheet">
 </head>
 <body class="admin-page">
-    <button class="sidebar-toggle" id="sidebar-toggle" type="button" aria-controls="sidebar-nav" aria-expanded="true" aria-label="Hide navigation">
-        <i class="bi bi-x-lg" aria-hidden="true"></i>
-    </button>
     <nav id="sidebar-nav">
+        <button class="sidebar-toggle" id="sidebar-toggle" type="button" aria-controls="sidebar-links" aria-expanded="true" aria-label="Hide navigation">
+            <i class="bi bi-x-lg" aria-hidden="true"></i>
+        </button>
         <div class="nav-container">
             <a href="index.php" class="brand">
                 <i class="brand-mark"><?= paw_svg() ?></i>
                 Pet<span>Record</span> <small>Admin</small>
             </a>
-            <div class="nav-links">
+            <div class="nav-links" id="sidebar-links">
                 <a href="index.php#dashboard" class="btn btn-outline"><i class="bi bi-house-heart"></i> Dashboard</a>
-                <a href="profile.php" class="btn btn-outline"><i class="bi bi-person"></i> Profile</a>
+                <a href="profile.php" class="nav-user-card" aria-label="User profile">
+                    <span class="profile-avatar" aria-hidden="true"><?= htmlspecialchars(strtoupper(substr($_SESSION['username'], 0, 1))) ?></span>
+                    <span class="profile-details">
+                        <span class="profile-name"><?= htmlspecialchars($_SESSION['username']) ?></span>
+                        <span class="profile-role"><?= $_SESSION['role'] === 'admin' ? 'Administrator' : 'Pet Owner' ?></span>
+                    </span>
+                </a>
                 <a href="logout.php" class="btn btn-outline">
                     <i class="bi bi-box-arrow-right"></i> Logout
                 </a>
             </div>
         </div>
     </nav>
-    <div class="profile-card" aria-label="User profile">
-        <span class="profile-avatar" aria-hidden="true"><?= htmlspecialchars(strtoupper(substr($_SESSION['username'], 0, 1))) ?></span>
-        <span class="profile-details">
-            <span class="profile-name"><?= htmlspecialchars($_SESSION['username']) ?></span>
-            <span class="profile-role">Administrator</span>
-        </span>
-    </div>
-
     <div class="container">
         <?php if ($message): ?>
             <div class="alert alert-<?= $messageType ?> toast-notification" role="<?= $messageType === 'danger' ? 'alert' : 'status' ?>" aria-live="<?= $messageType === 'danger' ? 'assertive' : 'polite' ?>">

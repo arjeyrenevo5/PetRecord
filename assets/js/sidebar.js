@@ -1,13 +1,14 @@
 const sidebar = document.getElementById('sidebar-nav');
+const navLinks = sidebar?.querySelector('.nav-links');
 const toggle = document.getElementById('sidebar-toggle');
 
-if (sidebar && toggle) {
+if (sidebar && navLinks && toggle) {
     const mobileQuery = window.matchMedia('(max-width: 768px)');
 
     function setSidebarHidden(hidden) {
         document.body.classList.toggle('sidebar-hidden', hidden);
-        sidebar.inert = hidden;
-        sidebar.setAttribute('aria-hidden', String(hidden));
+        navLinks.inert = hidden;
+        navLinks.setAttribute('aria-hidden', String(hidden));
         toggle.setAttribute('aria-expanded', String(!hidden));
         toggle.setAttribute('aria-label', hidden ? 'Show navigation' : 'Hide navigation');
         toggle.querySelector('i').className = hidden ? 'bi bi-list' : 'bi bi-x-lg';

@@ -95,36 +95,37 @@ body.sidebar-hidden nav {
 }
 
 .sidebar-toggle {
-    position: fixed;
+    position: absolute;
     top: 1.5rem;
-    left: 284px;
+    right: 0.75rem;
     z-index: 102;
     width: 42px;
     height: 42px;
     display: grid;
     place-items: center;
-    border: 1px solid var(--border);
+    border: 1px solid rgba(110, 231, 183, 0.55);
     border-radius: 13px;
-    background: #fff;
-    box-shadow: var(--shadow-md);
-    color: var(--primary-dark);
+    background: #145c45;
+    box-shadow: 0 8px 20px rgba(5, 30, 22, 0.3);
+    color: #fff;
     cursor: pointer;
     font-size: 1.15rem;
-    transition: left 0.25s ease, transform 0.18s ease, background 0.18s ease;
+    transition: right 0.25s ease, transform 0.18s ease, background 0.18s ease, border-color 0.18s ease;
 }
 
 .sidebar-toggle:hover {
-    background: var(--primary-soft);
+    background: #1f7a5c;
+    border-color: #6ee7b7;
     transform: translateY(-1px);
 }
 
 .sidebar-toggle:focus-visible {
-    outline: 3px solid rgba(31, 122, 92, 0.35);
-    outline-offset: 3px;
+    outline: 3px solid #6ee7b7;
+    outline-offset: 2px;
 }
 
-body.sidebar-hidden .sidebar-toggle {
-    left: 1rem;
+body.sidebar-hidden #sidebar-nav .sidebar-toggle {
+    right: -62px;
 }
 
 .nav-container {
@@ -193,36 +194,46 @@ body.sidebar-hidden .sidebar-toggle {
 .nav-links {
     display: flex;
     flex-direction: column;
+    flex: 1;
     gap: 0.6rem;
     align-items: stretch;
 }
 
-.profile-card {
-    position: fixed;
-    top: 1rem;
-    right: 1.5rem;
-    z-index: 101;
+.nav-user-card {
+    margin-top: auto;
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    min-width: 190px;
-    padding: 0.55rem 0.9rem 0.55rem 0.6rem;
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    background: rgba(255, 255, 255, 0.96);
-    box-shadow: var(--shadow-md);
+    gap: 0.7rem;
+    min-width: 0;
+    padding: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.08);
+    color: inherit;
+    text-decoration: none;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.nav-user-card:hover {
+    background: rgba(255, 255, 255, 0.14);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.nav-user-card:focus-visible {
+    outline: 3px solid rgba(110, 231, 183, 0.8);
+    outline-offset: 3px;
 }
 
 .profile-avatar {
-    width: 42px;
-    height: 42px;
-    flex: 0 0 42px;
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
     display: grid;
     place-items: center;
-    border: 2px solid #fff;
+    border: 1px solid rgba(255, 255, 255, 0.45);
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary), var(--purple));
-    box-shadow: 0 0 0 1px rgba(31, 122, 92, 0.18);
+    background: linear-gradient(135deg, #34d399, #1f7a5c);
+    box-shadow: 0 4px 12px rgba(5, 30, 22, 0.25);
     color: #fff;
     font-family: 'Baloo 2', sans-serif;
     font-size: 1.1rem;
@@ -238,7 +249,7 @@ body.sidebar-hidden .sidebar-toggle {
 
 .profile-name {
     overflow: hidden;
-    color: var(--text-primary);
+    color: #fff;
     font-size: 0.85rem;
     font-weight: 800;
     text-overflow: ellipsis;
@@ -246,7 +257,7 @@ body.sidebar-hidden .sidebar-toggle {
 }
 
 .profile-role {
-    color: var(--text-secondary);
+    color: #a7f3d0;
     font-size: 0.7rem;
     font-weight: 600;
 }
@@ -1948,16 +1959,11 @@ td {
     }
 
     .sidebar-toggle {
-        left: min(284px, calc(100vw - 3.5rem));
+        right: 0.75rem;
     }
 
-    body.sidebar-hidden .sidebar-toggle {
-        left: 1rem;
-    }
-
-    .profile-card {
-        max-width: calc(100% - 2rem);
-        right: 1rem;
+    body.sidebar-hidden #sidebar-nav .sidebar-toggle {
+        right: -62px;
     }
 
     .page-head {

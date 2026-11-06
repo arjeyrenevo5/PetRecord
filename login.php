@@ -96,7 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <i class="bi bi-person-lock"></i>
             </div>
             <div class="auth-header">
-                <h1>Welcome Back</h1>
+                <h1>Welcome, Pet Parent!</h1>
                 <p>Login to your PetRecord account</p>
             </div>
             <?php if (!empty($errors)): ?>
