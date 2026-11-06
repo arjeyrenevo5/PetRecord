@@ -279,6 +279,18 @@ body.sidebar-hidden #sidebar-nav .sidebar-toggle {
     transform: translateY(-1px);
 }
 
+.nav-links a[href="logout.php"] {
+    justify-content: flex-start;
+    border-color: rgba(251, 113, 133, 0.28);
+    background: rgba(251, 113, 133, 0.1);
+    color: #ffe4e8;
+}
+
+.nav-links a[href="logout.php"]:hover {
+    border-color: rgba(251, 113, 133, 0.55);
+    background: rgba(251, 113, 133, 0.2);
+}
+
 .nav-links .btn-outline:focus-visible,
 .brand:focus-visible,
 .btn:focus-visible,
